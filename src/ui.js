@@ -19,7 +19,6 @@ onmessage = event => {
     if (type === 'FONT_LOADED') {
         addFontRows(data, false);
         fonts = data;
-        console.log(fonts);
     }
     if (type === 'SHOW_TOAST') {
         showToast('Unfortunately, this font could not be loaded :[');
@@ -58,7 +57,6 @@ const addFontRows = (fonts, searchResults) => {
     for(let i = index; i < lim; i++) {
         if (fonts[i] && !fonts[i].fontName.family.startsWith('.')) {
             if (((i > 0 && fonts[i].fontName.family !== fonts[i-1].fontName.family) || i==0) && detectFont(fonts[i].fontName.family)) {
-                console.log(fonts[i].fontName.family);
                 let fontRow = document.createElement("DIV");
                 fontRow.innerText = fonts[i].fontName.family;
                 fontRow.style.fontFamily = "'" + fonts[i].fontName.family.toString() + "', sans-serif";
