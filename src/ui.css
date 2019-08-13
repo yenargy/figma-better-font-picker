@@ -34,31 +34,28 @@ input:focus { box-shadow: inset 0 0 0 2px #18A0FB; }
     background: #f3f3f3;
 }
 
-#loader {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 100px;
+.loading {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
 }
-#loader:after {
+.loading:after {
     content: " ";
     display: block;
-    width: 46px;
-    height: 46px;
-    margin: 1px;
+    width: 13px;
+    height: 13px;
     border-radius: 50%;
-    border: 3px solid #18a0fb;
-    border-color: #18a0fb transparent #18a0fb transparent;
-    animation: lds-dual-ring 1.2s linear infinite;
+    border: 1px solid #18A0FB;
+    border-color: #18A0FB transparent #18A0FB transparent;
+    animation: circle-loader 1.2s linear infinite;
 }
-@keyframes lds-dual-ring {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+@keyframes circle-loader {
+0% {
+    transform: rotate(0deg);
+}
+100% {
+    transform: rotate(360deg);
+}
 }
 
 #empty-search {
@@ -153,3 +150,42 @@ input:focus { box-shadow: inset 0 0 0 2px #18A0FB; }
     padding: 10px;
     border-radius: 4px;
 }
+
+/* max-height - the only parameter in this file that needs to be edited.
+ * Change it to suit your needs. The rest is recommended to leave as is.
+ */
+ .clusterize-scroll{
+    max-height: 555px;
+    overflow: auto;
+  }
+
+  /**
+   * Avoid vertical margins for extra tags
+   * Necessary for correct calculations when rows have nonzero vertical margins
+   */
+  .clusterize-extra-row{
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* By default extra tag .clusterize-keep-parity added to keep parity of rows.
+   * Useful when used :nth-child(even/odd)
+   */
+  .clusterize-extra-row.clusterize-keep-parity{
+    display: none;
+  }
+
+  /* During initialization clusterize adds tabindex to force the browser to keep focus
+   * on the scrolling list, see issue #11
+   * Outline removes default browser's borders for focused elements.
+   */
+  .clusterize-content{
+    outline: 0;
+    counter-reset: clusterize-counter;
+  }
+
+  /* Centering message that appears when no data provided
+   */
+  .clusterize-no-data td{
+    text-align: center;
+  }

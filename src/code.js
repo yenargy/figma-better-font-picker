@@ -38,6 +38,7 @@ figma.ui.onmessage = msg => {
 };
 
 const loadFont = async (font, node) => {
+  console.log(font);
   let fontStyles = ['Regular', 'Book', 'Plain', 'Normal', 'Mono', 'Medium', 'Light', 'Bold'];
   for (let index = 0; index < fontStyles.length; index++) {
     try {

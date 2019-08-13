@@ -2,7 +2,12 @@
   <input id="search" class="input" placeholder="Search | Type atleast 3 characters">
   <button class="close" id="clear-search"></button>
 </div>
-<div id="fonts"></div>
+<!-- <div id="fonts"></div> -->
+<div id="scrollArea" class="clusterize-scroll">
+  <div id="contentArea" class="clusterize-content">
+    <div class="clusterize-no-data">Loading data…</div>
+  </div>
+</div>
 <div id="search-results"></div>
 <div id="empty-search">
   <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -12,5 +17,6 @@
   <p>Looks like there are no fonts with your search term! Please change your search term and try again.</p>
 </div>
 <div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clusterize.js/0.18.0/clusterize.min.js" integrity="sha256-j2fSUXSx7aab6LM9Rhktwi08KATeQeYqfrLrUS3c56Y=" crossorigin="anonymous"></script>
 
 
