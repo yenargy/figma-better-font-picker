@@ -34,22 +34,6 @@ onmessage = event => {
     }
 }
 
-// $('#fonts').on('scroll', function(e) {
-//     let scrollTop = $('#fonts').scrollTop();
-//     let windowHeight = fontDiv.scrollHeight;
-//     let scrollPercentage = (scrollTop / windowHeight);
-//     console.log(windowHeight);
-//     console.log(scrollTop);
-//     console.log($('#fonts').height());
-//     // if (scrollTop + Math.ceil($('#fonts').height()) >= fontDiv.scrollHeight-10) {
-//     //     console.log('reached bottom');
-//     //     addFontRows(fonts, false);
-//     // }
-//     if (scrollPercentage > 0.5 && paginationIndex < fonts.length) {
-//         // addFontRows(fonts, false);
-//     }
-// });
-
 $(document).on("click",".font-row", function(){
     const name = $(this).attr('data-content');
     console.log(name);
@@ -63,120 +47,48 @@ const showToast = (str) => {
     });
 }
 
-const addFonts = (fonts, searchResults) => {
-    let fontRowDiv = [];
-
-    for (var i=0; i<fonts.length; i++) {
-        fontRowDiv.push(`
-        <div class="font-row" data-content="` + fonts[i].fontName.family + `" ` +
-        `style="font-family: '` + fonts[i].fontName.family.toString() + `', sans-serif">` +
-        fonts[i].fontName.family +
-        `</div>`);
-    }
-    document.getElementById('fonts').innerHTML = fontRowDiv.join('');
-}
-
-const setFonts = async (fontRow, name) => {
-    fontRow.style.fontFamily = "'" + name + "', sans-serif";
-}
-
 const addFontRows = (fonts, searchResults) => {
-    let index = paginationIndex;
-    let lim = limit;
-    if (searchResults) {
-        index = 0;
-        lim = fonts.length;
-    }
-    // console.log(limit);
-    // console.log(index);
     let fontRowDiv = [];
-    console.log(fastdom);
-    var c = document.createDocumentFragment();
-    console.time("adding fonts");
-    for(let i = index; i < fonts.length; i++) {
+    let cleanedFontList = [];
+    for(let i = 0; i < fonts.length; i++) {
         if (fonts[i] && !fonts[i].fontName.family.startsWith('.')) {
             if (((i > 0 && fonts[i].fontName.family !== fonts[i-1].fontName.family) || i==0)) {
-                // let fontRow = document.createElement("DIV");
-                // fontRow.textContent = fonts[i].fontName.family;
-                // fontRow.style.fontFamily = "'" + fonts[i].fontName.family.toString() + "', sans-serif";
-                // fontRow.className = "font-row"
-                // fontRow.style.fontStyle = fonts[i].fontName.style;
-                // fontRow.onclick = function() {
-                //     parent.postMessage({ pluginMessage: { type: 'set-font', data: fontRow.innerText} }, '*')
-                // };
-
-                // let fontRow = document.createElement("DIV");
-                // // fontRow.innerHTML = 'mmmmmmmmmmlli';
-                // // setTimeout(() => {
-                // //     fontRow.style.fontFamily = "'" + fonts[i].fontName.family.toString() + "', sans-serif";
-                // // }, 1000)
-                // setTimeout(() => {
-                //     setFonts(fontRow, fonts[i].fontName.family.toString())
-                // }, 1000)
-                // fontRow.className = "font-row"
-                // // fontRow.style.fontStyle = fonts[i].fontName.style;
-                // fontRow.onclick = function() {
-                //     parent.postMessage({ pluginMessage: { type: 'set-font', data: fontRow.innerText} }, '*')
-                // };
-                // h.appendChild(fontRow);
-                // let matched = (fontRow.offsetWidth != defaultWidth || fontRow.offsetHeight != defaultHeight);
-                // h.removeChild(fontRow);
-                // if (matched) {
-                //     fontRow.textContent = fonts[i].fontName.family;
-                //     c.appendChild(fontRow);
-                // }
-
-                // fontRow.textContent = fonts[i].fontName.family;
-                // c.appendChild(fontRow);
-
-
+                cleanedFontList.push(fonts[i].fontName.family);
                 fontRowDiv.push(`
                 <div class="font-row" data-content="` + fonts[i].fontName.family + `" ` +
-                `style="font-family: '` + fonts[i].fontName.family.toString() + `', sans-serif">` +
+                `style="font-family: '` + fonts[i].fontName.family.toString() + `', serif">` +
                 fonts[i].fontName.family +
                 `</div>`);
-
-                // if (searchResults) {
-                //     $('#search-results').append(fontRow);
-                // } else {
-                //     // $('#fonts').append(fontRow);
-                // }
             }
         } else {
             fonts.splice(i, 1);
         }
     }
 
-    let clusterize = new Clusterize({
+    // detectFont(fonts[i].fontName.family);
+    let detectIndex = 0;
+    console.log(fontRowDiv.length);
+    let clusterize = null;
+    clusterize = new Clusterize({
         rows: fontRowDiv,
         rows_in_block: 15,
         scrollId: 'scrollArea',
-        contentId: 'contentArea'
+        contentId: 'contentArea',
+        callbacks: {
+            clusterChanged: function() {
+                for(detectIndex; detectIndex < 15; detectIndex++) {
+                    if (!detectFont(cleanedFontList[detectIndex])) {
+                        fontRowDiv.splice(detectIndex, 1);
+                        console.log(clusterize);
+                        // clusterize.update(fontRowDiv);
+                    }
+                }
+                console.log(fontRowDiv.length);
+            },
+        }
     });
 
-    if (searchResults) {
-        return;
-    }
-
-    //Pagination stuff. TODO: cleanup this mess
-    if (firstCall) {
-        paginationIndex += 500;
-        if (limit < fonts.length) {
-            limit += 500;
-            if (limit > fonts.length) {
-                limit = fonts.length;
-            }
-        }
-        firstCall = false;
-    } else {
-        paginationIndex += 500;
-        if (limit < fonts.length) {
-            limit += 500;
-            if (limit > fonts.length) {
-                limit = fonts.length;
-            }
-        }
-    }
+    console.log(clusterize.getScrollProgress());
 }
 
 // Debounce setup variables
@@ -240,36 +152,43 @@ let testString = "mmmmmmmmmmlli";
 
 //Testing using 72px font size. I guess larger the better.
 let testSize = '72px';
+let defaultWidth = 0;
+let defaultHeight = 0;
 
-let h = document.getElementsByTagName("body")[0];
-
+let body = document.getElementsByTagName("body")[0];
 // create a SPAN in the document to get the width of the text we use to test
 let s = document.createElement("span");
 s.style.fontSize = testSize;
 s.innerHTML = testString;
-let defaultWidth = 0;
-let defaultHeight = 0;
 s.style.fontFamily = 'serif';
-h.appendChild(s);
+body.appendChild(s);
 defaultWidth = s.offsetWidth;
 defaultHeight = s.offsetHeight;
-h.removeChild(s);
+// body.removeChild(s);
 
-// var c = document.createDocumentFragment();
+
 // for (var i=0; i<10000; i++) {
 //     var e = document.createElement("div");
 //     e.className = "test-div";
-//     c.appendChild(e);
+//     fragment.appendChild(e);
 // }
+// console.log(fragment);
 // document.body.appendChild(c);
 
+let i = 0;
 const detectFont = (font) =>{
+    console.log(font);
     let detected = false;
     s.style.fontFamily = '"' + font + '"' + ',' + 'serif';
-    h.appendChild(s);
+    s.style.visibility = 'hidden';
+    // console.log(s);
+    body.appendChild(s);
+    // fragment.appendChild(s)
+    // console.log(fragment);
     let matched = (s.offsetWidth != defaultWidth || s.offsetHeight != defaultHeight);
-    h.removeChild(s);
+    body.removeChild(s);
     detected = detected || matched;
+    console.log(detected);
     // console.log(font + " : " + detected);
     return detected;
 }
