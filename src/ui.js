@@ -192,7 +192,7 @@ body.appendChild(s);
 defaultWidth = s.offsetWidth;
 defaultHeight = s.offsetHeight;
 
-/* Function which adds a text layer, calculates the width with defaul ones to 
+/* Function which adds a text layer, calculates the width with defaul ones to
  * detect wether browser has the font installed or not
  */
 const detectFont = (font) =>{
