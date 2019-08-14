@@ -17,12 +17,6 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  if (msg.type === 'cancel') {
-    // Make sure to close the plugin when you're done. Otherwise the plugin will
-    // keep running, which shows the cancel button at the bottom of the screen.
-    figma.closePlugin();
-  }
-
   if (msg.type === 'set-font') {
     for (const node of figma.currentPage.selection) {
       if (node.type === 'TEXT') {

@@ -1,5 +1,5 @@
 {
-  "name": "font-preview",
+  "name": "figma-better-font-picker",
   "version": "1.0.0",
   "description": "font selections, better",
   "main": "code.js",
@@ -10,6 +10,7 @@
     "figma",
     "font",
     "preivew",
+    "picker",
     "plugin"
   ],
   "author": "nitinrgupta",

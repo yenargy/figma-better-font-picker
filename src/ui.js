@@ -6,8 +6,24 @@ $(document).ready(() => {
     parent.postMessage({ pluginMessage: { type: 'fetch-fonts'} }, '*')
 })
 
-let fonts = [];
-let clusterize = null;
+// Global variable declarations
+let fontsCluster = null;
+let searchInput = $('#search');
+let fontRowDiv = [];
+let cleanedFontList = [];
+let searchResults = [];
+let detectIndex = 0;
+let detectLimit = 15;
+
+// Initing search cluster
+let searchCluster = new Clusterize({
+    rows: searchResults,
+    rows_in_block: 15,
+    tag: 'div',
+    scrollId: 'search-scroll-area',
+    contentId: 'search-content-area',
+    show_no_data_row: false
+});
 
 //event handler from figma
 onmessage = event => {
@@ -17,7 +33,6 @@ onmessage = event => {
 
     if (type === 'FONT_LOADED') {
         addFontRows(data, false);
-        fonts = data;
     }
     if (type === 'SHOW_TOAST') {
         showToast('Unfortunately, this font could not be loaded :[');
@@ -30,11 +45,13 @@ onmessage = event => {
     }
 }
 
-$(document).on("click",".font-row", function(){
+// On click listener for font rows
+$(document).on("click", ".font-row", function(){
     const name = $(this).attr('data-content');
     parent.postMessage({ pluginMessage: { type: 'set-font', data: name} }, '*')
 });
 
+// Utility function to show toast message
 const showToast = (str) => {
     $('#toast').text(str);
     $('#toast').fadeIn(200, function() {
@@ -42,9 +59,8 @@ const showToast = (str) => {
     });
 }
 
-const addFontRows = (fonts, searchResults) => {
-    let fontRowDiv = [];
-    let cleanedFontList = [];
+// Function to clean out the fonts array returned from figma
+const addFontRows = (fonts) => {
     for(let i = 0; i < fonts.length; i++) {
         if (fonts[i] && !fonts[i].fontName.family.startsWith('.')) {
             if (((i > 0 && fonts[i].fontName.family !== fonts[i-1].fontName.family) || i==0)) {
@@ -61,46 +77,41 @@ const addFontRows = (fonts, searchResults) => {
         }
     }
 
-
-    let detectIndex = 0;
-    let detectLimit = 15;
-    console.log(cleanedFontList);
     for (detectIndex; detectIndex < detectLimit; detectIndex++) {
         if (!detectFont(cleanedFontList[detectIndex])) {
-            console.log('-------------------------------------');
-            console.log('removing: ', cleanedFontList[detectIndex]);
-            console.log('-------------------------------------');
+            // console.log('-------------------------------------');
+            // console.log('removing: ', cleanedFontList[detectIndex]);
+            // console.log('-------------------------------------');
             cleanedFontList.splice(detectIndex, 1);
             fontRowDiv.splice(detectIndex, 1);
             detectIndex--;
         }
     }
 
-    clusterize = new Clusterize({
+    fontsCluster = new Clusterize({
         rows: fontRowDiv,
         rows_in_block: 15,
         tag: 'div',
-        scrollId: 'scrollArea',
-        contentId: 'contentArea',
+        scrollId: 'fonts-scroll-area',
+        contentId: 'fonts-content-area',
+        no_data_text: 'No fonts found :(',
         callbacks: {
             clusterChanged: function() {
-                console.log('cluster changed');
-                if (detectIndex > cleanedFontList.length) {
+                if (detectIndex > cleanedFontList.length || searchInput.val().length > 0) {
                     return;
                 }
                 for(detectIndex; detectIndex < detectLimit; detectIndex++) {
                     if (detectIndex < cleanedFontList.length && !detectFont(cleanedFontList[detectIndex])) {
-                        console.log('-------------------------------------');
-                        console.log('removing: ' + detectIndex +": " + cleanedFontList[detectIndex]);
-                        console.log('-------------------------------------');
+                        // console.log('-------------------------------------');
+                        // console.log('removing: ' + detectIndex +": " + cleanedFontList[detectIndex]);
+                        // console.log('-------------------------------------');
                         cleanedFontList.splice(detectIndex, 1);
                         fontRowDiv.splice(detectIndex, 1);
                         detectIndex--;
-                        clusterize.update(fontRowDiv);
+                        fontsCluster.update(fontRowDiv);
                     }
                 }
                 detectLimit += 15;
-                console.log(cleanedFontList.length);
             },
         }
     });
@@ -109,51 +120,50 @@ const addFontRows = (fonts, searchResults) => {
 // Debounce setup variables
 let typingTimer;
 let doneTypingInterval = 500;
-let searchInput = document.getElementById('search');
 
 // On keyup event listener
-searchInput.addEventListener('keyup', () => {
+searchInput.on('keyup', () => {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(doneTyping, doneTypingInterval);
 });
 
 // After debounce function
 const doneTyping = () => {
-    $('#search-results').empty();
-    const searchValue = searchInput.value.toLowerCase();
+    searchCluster.update([]);
+    const searchValue = searchInput.val().toLowerCase();
     if (searchValue.length > 2) {
-        let filteredFonts = fonts.filter((font, index) =>  {
-            if (font.fontName.family.toLowerCase().includes(searchValue) && detectFont(font.fontName.family)) {
+        let searchResults = fontRowDiv.filter((font, index) =>  {
+            let fontName = font.substring(font.indexOf(">") + 1, font.lastIndexOf("<"));
+            if (fontName.toLowerCase().includes(searchValue) && detectFont(fontName)) {
                 return true;
             }
             return false;
         });
-
-        if (filteredFonts.length === 0) {
-            $('#fonts').hide();
-            $('#search-results').hide();
+        if (searchResults.length === 0) {
+            searchCluster.update([]);
+            $('#fonts-scroll-area').hide();
+            $('#seach-scroll-area').hide();
             $('#empty-search').show();
         } else {
+            searchCluster.update(searchResults);
             $('#empty-search').hide();
-            $('#fonts').hide();
-            addFontRows(filteredFonts, true);
-            $('#search-results').show();
+            $('#fonts-scroll-area').hide();
+            $('#search-scroll-area').show();
         }
     }
     if (searchValue.length === 0) {
-        $('#fonts').show();
+        $('#fonts-scroll-area').show();
         $('#empty-search').hide();
         $('#empty-search').show();
     }
 }
 
 $('#clear-search').on('click', function(e) {
-    $('#search-results').empty();
+    searchCluster.update([]);
     $('#empty-search').hide();
-    $('#search-results').hide();
-    $('#fonts').show();
+    $('#search-scroll-area').hide();
+    $('#fonts-scroll-area').show();
     $('#search').val('');
-    addFontRows(fonts, false);
 });
 
 /* Figma returns bunch of unnecessary/weird system fonts that don't render in browser.
@@ -171,23 +181,25 @@ let defaultWidth = 0;
 let defaultHeight = 0;
 
 let body = document.getElementsByTagName("body")[0];
+
 // create a SPAN in the document to get the width of the text we use to test
 let s = document.createElement("span");
 s.style.fontSize = testSize;
+s.style.visibility = 'hidden';
 s.innerHTML = testString;
 s.style.fontFamily = 'serif';
 body.appendChild(s);
 defaultWidth = s.offsetWidth;
 defaultHeight = s.offsetHeight;
-body.removeChild(s);
 
+/* Function which adds a text layer, calculates the width with defaul ones to 
+ * detect wether browser has the font installed or not
+ */
 const detectFont = (font) =>{
     let detected = false;
     s.style.fontFamily = '"' + font + '"' + ',' + 'serif';
-    body.appendChild(s);
     let matched = (s.offsetWidth != defaultWidth || s.offsetHeight != defaultHeight);
-    body.removeChild(s);
     detected = detected || matched;
-    console.log(font + " : " + detected);
+    // console.log(font + " : " + detected);
     return detected;
 }
