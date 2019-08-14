@@ -156,7 +156,8 @@ input:focus { box-shadow: inset 0 0 0 2px #18A0FB; }
  */
  .clusterize-scroll{
     max-height: 555px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   /**

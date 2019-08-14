@@ -7,10 +7,7 @@ $(document).ready(() => {
 })
 
 let fonts = [];
-let paginationIndex = 0;
-let limit = 500;
-let fontDiv = document.getElementById("fonts");
-let firstCall = true;
+let clusterize = null;
 
 //event handler from figma
 onmessage = event => {
@@ -20,7 +17,6 @@ onmessage = event => {
 
     if (type === 'FONT_LOADED') {
         addFontRows(data, false);
-        // addFonts(data, false);
         fonts = data;
     }
     if (type === 'SHOW_TOAST') {
@@ -36,7 +32,6 @@ onmessage = event => {
 
 $(document).on("click",".font-row", function(){
     const name = $(this).attr('data-content');
-    console.log(name);
     parent.postMessage({ pluginMessage: { type: 'set-font', data: name} }, '*')
 });
 
@@ -56,39 +51,59 @@ const addFontRows = (fonts, searchResults) => {
                 cleanedFontList.push(fonts[i].fontName.family);
                 fontRowDiv.push(`
                 <div class="font-row" data-content="` + fonts[i].fontName.family + `" ` +
-                `style="font-family: '` + fonts[i].fontName.family.toString() + `', serif">` +
+                `style="font-family: '` + fonts[i].fontName.family.toString() + `', sans-serif">` +
                 fonts[i].fontName.family +
                 `</div>`);
             }
         } else {
             fonts.splice(i, 1);
+            i++;
         }
     }
 
-    // detectFont(fonts[i].fontName.family);
+
     let detectIndex = 0;
-    console.log(fontRowDiv.length);
-    let clusterize = null;
+    let detectLimit = 15;
+    console.log(cleanedFontList);
+    for (detectIndex; detectIndex < detectLimit; detectIndex++) {
+        if (!detectFont(cleanedFontList[detectIndex])) {
+            console.log('-------------------------------------');
+            console.log('removing: ', cleanedFontList[detectIndex]);
+            console.log('-------------------------------------');
+            cleanedFontList.splice(detectIndex, 1);
+            fontRowDiv.splice(detectIndex, 1);
+            detectIndex--;
+        }
+    }
+
     clusterize = new Clusterize({
         rows: fontRowDiv,
         rows_in_block: 15,
+        tag: 'div',
         scrollId: 'scrollArea',
         contentId: 'contentArea',
         callbacks: {
             clusterChanged: function() {
-                for(detectIndex; detectIndex < 15; detectIndex++) {
-                    if (!detectFont(cleanedFontList[detectIndex])) {
+                console.log('cluster changed');
+                if (detectIndex > cleanedFontList.length) {
+                    return;
+                }
+                for(detectIndex; detectIndex < detectLimit; detectIndex++) {
+                    if (detectIndex < cleanedFontList.length && !detectFont(cleanedFontList[detectIndex])) {
+                        console.log('-------------------------------------');
+                        console.log('removing: ' + detectIndex +": " + cleanedFontList[detectIndex]);
+                        console.log('-------------------------------------');
+                        cleanedFontList.splice(detectIndex, 1);
                         fontRowDiv.splice(detectIndex, 1);
-                        console.log(clusterize);
-                        // clusterize.update(fontRowDiv);
+                        detectIndex--;
+                        clusterize.update(fontRowDiv);
                     }
                 }
-                console.log(fontRowDiv.length);
+                detectLimit += 15;
+                console.log(cleanedFontList.length);
             },
         }
     });
-
-    console.log(clusterize.getScrollProgress());
 }
 
 // Debounce setup variables
@@ -142,7 +157,7 @@ $('#clear-search').on('click', function(e) {
 });
 
 /* Figma returns bunch of unnecessary/weird system fonts that don't render in browser.
- * Hence this following font detection piece to eliminate those fonts for better UX
+ * Hence this following font detection piece to eliminate those fonts
  * https://github.com/alanhogan/bookmarklets/blob/master/font-stack-guess.js
  */
 
@@ -164,31 +179,15 @@ s.style.fontFamily = 'serif';
 body.appendChild(s);
 defaultWidth = s.offsetWidth;
 defaultHeight = s.offsetHeight;
-// body.removeChild(s);
+body.removeChild(s);
 
-
-// for (var i=0; i<10000; i++) {
-//     var e = document.createElement("div");
-//     e.className = "test-div";
-//     fragment.appendChild(e);
-// }
-// console.log(fragment);
-// document.body.appendChild(c);
-
-let i = 0;
 const detectFont = (font) =>{
-    console.log(font);
     let detected = false;
     s.style.fontFamily = '"' + font + '"' + ',' + 'serif';
-    s.style.visibility = 'hidden';
-    // console.log(s);
     body.appendChild(s);
-    // fragment.appendChild(s)
-    // console.log(fragment);
     let matched = (s.offsetWidth != defaultWidth || s.offsetHeight != defaultHeight);
     body.removeChild(s);
     detected = detected || matched;
-    console.log(detected);
-    // console.log(font + " : " + detected);
+    console.log(font + " : " + detected);
     return detected;
 }
