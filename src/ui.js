@@ -34,30 +34,13 @@ onmessage = event => {
     if (type === 'FONT_LOADED') {
         addFontRows(data, false);
     }
-    if (type === 'SHOW_TOAST') {
-        showToast('Unfortunately, this font could not be loaded :[');
-    }
-    if (type === 'NO_TEXT_LAYER') {
-        showToast('Please select a text layer');
-    }
-    if (type === 'FONT_LOAD_ERROR') {
-        showToast('There was an error while loading the font :[  Please restart the plugin');
-    }
 }
 
 // On click listener for font rows
 $(document).on("click", ".font-row", function(){
     const name = $(this).attr('data-content');
-    parent.postMessage({ pluginMessage: { type: 'set-font', data: name} }, '*')
+    parent.postMessage({ pluginMessage: { type: 'set-font', data: name } }, '*')
 });
-
-// Utility function to show toast message
-const showToast = (str) => {
-    $('#toast').text(str);
-    $('#toast').fadeIn(200, function() {
-        $('#toast').delay(2500).fadeOut();
-    });
-}
 
 // Function to clean out the fonts array returned from figma
 const addFontRows = (fonts) => {
