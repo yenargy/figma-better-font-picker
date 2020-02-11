@@ -155,7 +155,7 @@ input:focus { box-shadow: inset 0 0 0 2px #18A0FB; }
 }
 
  .clusterize-scroll{
-    max-height: 570px;
+    max-height: 550px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -174,4 +174,16 @@ input:focus { box-shadow: inset 0 0 0 2px #18A0FB; }
     margin-top: 50px;
     padding: 40px;
     font-family: "Inter", sans-serif;
+}
+
+.footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 10px;
+    display: flex;
+    padding: 3px;
+    justify-content: flex-end;
+}
+
+.footer .link {
+    margin: 0 5px;
 }

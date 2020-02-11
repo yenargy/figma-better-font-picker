@@ -1,5 +1,5 @@
 <img src="https://github.com/nitinrgupta/figma-font-preview/blob/develop/repo-assets/icon.png" alt="icon" height="50"></img>
-# figma-font-preview
+# figma-better-font-picker
 
 A plugin to enable better font selections in Figma which previews how the font looks like.
 
