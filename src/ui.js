@@ -1,11 +1,6 @@
 import './ui.css'
 import $ from 'jquery';
 
-// Fetching list of fonts from figma
-$(document).ready(() => {
-    parent.postMessage({ pluginMessage: { type: 'fetch-fonts'} }, '*')
-})
-
 // Global variable declarations
 let fontsCluster = null;
 let searchInput = $('#search');
@@ -14,6 +9,12 @@ let cleanedFontList = [];
 let searchResults = [];
 let detectIndex = 0;
 let detectLimit = 15;
+
+// Fetching list of fonts from figma
+$(document).ready(() => {
+    parent.postMessage({ pluginMessage: { type: 'fetch-fonts'} }, '*')
+    searchInput.focus();
+})
 
 // Initing search cluster
 let searchCluster = new Clusterize({
@@ -109,6 +110,7 @@ searchInput.on('keyup', () => {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(doneTyping, doneTypingInterval);
 });
+
 
 // After debounce function
 const doneTyping = () => {
